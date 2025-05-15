@@ -167,9 +167,9 @@ You can open an issue on GitHub, and I can try to help. Please make sure to incl
 
 ## Notes
 
-* The quality of decompilation depends on the complexity of the original code.
+* The quality of decompilation depends on both the complexity of the code, the model you're using, and the reasoning effort you chose (if any).
 * For especially complex code, consider GPT-o3 or Gemini 2.5 Pro or Flash models with reasoning effort set to high. (This can get costly!)
-* See also: [uncompyle6](https://github.com/rocky/python-uncompyle6) and [decompile3](https://github.com/rocky/python-decompile3)
+* Alternatives: [uncompyle6](https://github.com/rocky/python-uncompyle6) and [decompile3](https://github.com/rocky/python-decompile3)
 
 ---
 

@@ -80,10 +80,12 @@ def get_token_count(text: str, model_name: str, provider: str) -> int:
             file=sys.stderr
         )
         token_model = "gpt-4o"
-
+    print(f"[Token Count] Estimating token count for model '{model_name}' (effective: '{token_model}')...", file=sys.stderr)
     try:
         encoding = tiktoken.encoding_for_model(token_model)
-        return len(encoding.encode(text))
+        token_count = len(encoding.encode(text))
+        print(f"[Token Count] Estimated token count: {token_count}", file=sys.stderr)
+        return token_count
     except Exception as e: 
         if provider == PROVIDER_GOOGLE: 
                 pass 
@@ -95,7 +97,9 @@ def get_token_count(text: str, model_name: str, provider: str) -> int:
             )
         try:
             encoding = tiktoken.get_encoding("cl100k_base")
-            return len(encoding.encode(text))
+            token_count = len(encoding.encode(text))
+            print(f"[Token Count] Estimated token count: {token_count}", file=sys.stderr)
+            return token_count
         except Exception as e_fallback:
             print(
                 f"{RED}Error: Fallback tiktoken encoding 'cl100k_base' also failed: {e_fallback}. "
@@ -103,7 +107,9 @@ def get_token_count(text: str, model_name: str, provider: str) -> int:
                 file=sys.stderr
             )
 
-    return len(text) // 4 #fallback
+    token_count = len(text) // 4 #fallback
+    print(f"[Token Count] Estimated token count: {token_count}", file=sys.stderr)
+    return token_count
 
 
 def disassemble(pyc_file: str):
@@ -120,6 +126,7 @@ def disassemble(pyc_file: str):
         return None, f"Error: File '{pyc_file}' is empty."
 
     try:
+        print(f"[Disassembler] Disassembling... This might take a while...", file=sys.stderr)
         result = xdis.load.load_module(pyc_file)
         code = None
         if isinstance(result, tuple):
@@ -152,6 +159,7 @@ def disassemble(pyc_file: str):
                 f"Error: Bytecode disassembly for '{pyc_file}' "
                 "resulted in empty output. The .pyc might be trivial or corrupted."
             )
+        print(f"[Disassembler] Disassembled successfully.", file=sys.stderr)
         return disassembly, None
     except PermissionError:
         return None, f"Error: Permission denied when trying to read '{pyc_file}'."
@@ -244,7 +252,9 @@ def call_llm(
                 full_content = []
                 stream_call_params = llm_params.copy()
                 stream_call_params["stream"] = True
+                print("[LLM] Sending request...")
                 stream = client.chat.completions.create(**stream_call_params)
+                print("[LLM] Received response.")
                 if output_file_handle:
                     for chunk in stream:
                         if chunk.choices and chunk.choices[0].delta and chunk.choices[0].delta.content:
@@ -270,7 +280,9 @@ def call_llm(
         else: 
             non_stream_param = llm_params.copy()
             non_stream_param["stream"] = False
+            print("[LLM] Sending request...")
             completion = client.chat.completions.create(**non_stream_param)
+            print("[LLM] Received response.")
             if completion.choices and completion.choices[0].message and \
                completion.choices[0].message.content is not None:
                 content = completion.choices[0].message.content
@@ -443,7 +455,7 @@ def _decompile_llm(
                 pbar = tqdm(total=1, desc=f"{progress_desc} (1 iter, no stream)")
             else:
                 print(f"{progress_desc} (1 iter, no stream)...", file=sys.stderr)
-        
+        print(f"[LLM] Running decompilation for (Provider: {args.provider}, Model: {args.model}, Iter: {iter_count + 1}, Threads: {args.threads}, Stream: {args.stream}, Verify: {args.verify}, Split: {args.split}, Tokens: N/A, Attempt: {iter_count + 1}/{args.iter})...", file=sys.stderr)
         decompiled, error = call_llm(
             api_key, args.model, args.systemmsg,
             prompt, args.provider,
@@ -476,6 +488,7 @@ def _decompile_llm(
         stream = False # we don't stream for iter > 1
 
         futures_list = []
+        print(f"[LLM] Running decompilation for '{prompt}' (Provider: {args.provider}, Model: {args.model}, Iter: {iter_count + 1}, Threads: {worker_count}, Stream: {stream}, Verify: {args.verify}, Split: {args.split}, Tokens: N/A, Attempt: {iter_count + 1}/{args.iter})...", file=sys.stderr)
         with ThreadPoolExecutor(max_workers=worker_count) as executor:
             for i in range(args.iter):
                 futures_list.append(
@@ -787,8 +800,8 @@ def main():
         print(f"{YELLOW}Warning: --topp value {args.topp} for {provider} is outside the typical range [0.0, 1.0].{RESET}", file=sys.stderr)
     
     if args.effort != None:
-        if args.effort.lower() not in ["low", "medium", "high"]:
-            parser.error("--effort must be 'low', 'medium', or 'high'.")
+        if args.effort.lower() not in ["low", "medium", "high", "none"]:
+            parser.error("--effort must be 'low', 'medium', 'high', or 'none'.")
         args.effort = args.effort.lower()
         print(f"{GREEN}Effort set to {args.effort.upper()}. This may get costly depending on your model provider!{RESET}", file=sys.stderr)
 
@@ -843,14 +856,14 @@ def main():
             continue
         
         if args.verify.lower() == 'yes':
-            print("Verifying syntax of the decompiled code...", file=sys.stderr)
+            print("[Verify] Verifying syntax of the decompiled code...", file=sys.stderr)
             verified, verify_msg = verify(current_code)
             if verified:
-                print("Syntax verification successful.", file=sys.stderr)
+                print("[Verify] Syntax verification successful.", file=sys.stderr)
                 final_code = current_code
                 break
             else:
-                error_msg = f"Syntax verification failed (attempt {attempt_num + 1}): {verify_msg}"
+                error_msg = f"[Verify] Syntax verification failed (attempt {attempt_num + 1}): {verify_msg}"
                 print(f"{RED}{error_msg}{RESET}", file=sys.stderr)
                 if is_last_attempt:
                     final_code = current_code 

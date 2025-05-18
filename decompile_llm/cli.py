@@ -1,5 +1,6 @@
 import argparse
 import sys
+import os
 from .constants import (
     DEFAULT_LLM_MODEL_OPENAI,
     DEFAULT_LLM_MODEL_GOOGLE,
@@ -17,7 +18,7 @@ from .constants import (
 from .api import get_api_key
 from .decompiler import decompile
 from .utils import verify
-
+from .constants import RESET
 
 def main():
     parser = argparse.ArgumentParser(

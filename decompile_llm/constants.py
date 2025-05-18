@@ -4,7 +4,7 @@ RED = '\033[91m'
 RESET = '\033[0m'
 
 DEFAULT_LLM_MODEL_OPENAI = "gpt-4.1"
-DEFAULT_LLM_MODEL_GOOGLE = "gemini-2.5-flash"
+DEFAULT_LLM_MODEL_GOOGLE = "gemini-2.5-flash-preview-04-17"
 DEFAULT_SYSTEM_MESSAGE = (
     "You are a Python decompiler. Given the following Python bytecode "
     "disassembly, please provide the corresponding Python source code. "

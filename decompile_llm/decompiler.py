@@ -7,6 +7,7 @@ from .api import call_llm
 from .disassembler import disassemble
 from .token_utils import get_token_count
 from .utils import check_similarity, split_manual, split_auto
+from tqdm import tqdm
 from .constants import (
     DEFAULT_MAX_WORKERS_FOR_ITERATIONS,
     LLM_REQUEST_TIMEOUT_SECONDS,
@@ -70,7 +71,7 @@ def _decompile_llm(
         stream = False # we don't stream for iter > 1
 
         futures_list = []
-        print(f"[LLM] Running decompilation for '{prompt}' (Provider: {args.provider}, Model: {args.model}, Iter: {iter_count + 1}, Threads: {worker_count}, Stream: {stream}, Verify: {args.verify}, Split: {args.split}, Tokens: N/A, Attempt: {iter_count + 1}/{args.iter})...", file=sys.stderr)
+        print(f"[LLM] Running decompilation... (Provider: {args.provider}, Model: {args.model}, Iter: {iter_count + 1}, Threads: {worker_count}, Stream: {stream}, Verify: {args.verify}, Split: {args.split}, Tokens: N/A, Attempt: {iter_count + 1}/{args.iter})...", file=sys.stderr)
         with ThreadPoolExecutor(max_workers=worker_count) as executor:
             for i in range(args.iter):
                 futures_list.append(

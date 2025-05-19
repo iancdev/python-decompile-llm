@@ -28,6 +28,6 @@ def test_split_auto(monkeypatch):
     def fake_count(text, model, provider):
         return 1
 
-    monkeypatch.setattr("decompile_llm.utils.get_token_count", fake_count)
+    monkeypatch.setattr("decompilellm.utils.get_token_count", fake_count)
     chunks = split_auto(disasm, 2, "model", "openai")
     assert chunks == ["a\nb\n", "c\nd\n"]

@@ -1,10 +1,8 @@
-# [Jump to Quick Start](#quick-start)
-
 # Decompile LLM
 An LLM powered Python decompiler, that restores source code from `.pyc` files.
 
 ## Introduction
-This program aims to restore human-readable source code from `.pyc` files. decompile-llm uses the power of AI to restore source code for all Python versions, and all future Python versions. This includes Python 1.0 -> Python 3.13 (as of writing)
+This program aims to restore human-readable source code from `.pyc` files. decompile-llm uses the power of AI to restore source code for all Python versions, and all future Python versions.
 
 ## Why
 As Python evolves, decompilation has become more difficult, as other tools are no longer supporting newer Python versions. Fortunately, LLMs have an intimate understanding of Python bytecode, allowing this tool to automatically reconstruct source codes from every python version. However, it is important to note that, since we are utilizing LLMs, the accuracy of the reconstruction varies depending on your target code, and the model you choose.
@@ -18,7 +16,7 @@ Since the accuracy heavily depends on the model you choose, I noted down below t
 ## Requirements
 
 - `.pyc` file
-- Python 3.8 or higher (for direct Python use)
+- Python 3.10 or higher
 - OpenAI API key or Google Gemini API key
 
 ---
@@ -39,6 +37,12 @@ Since the accuracy heavily depends on the model you choose, I noted down below t
 
 ## Installation
 
+The most straightforward way to install is via pypi.
+```bash
+pip install decompilellm
+```
+
+You can also install from source by cloning the repository and installing dependencies manually.
 ```bash
 # Clone the repository
 git clone https://github.com/iancdev/python-decompile-llm
@@ -59,31 +63,31 @@ Python version is automatically detected for disassembly.
 Use this for the best code output for free.
 This option uses Gemini 2.5 Flash with reasoning effort set to high, and runs 3 iterations.
 ```bash
-python decompile-llm.py --provider google --key <gemini_key> --verify yes --iter 3 --output decompiled.py --effort high <targetfile>.pyc
+decompilellm --provider google --key <gemini_key> --verify yes --iter 3 --output decompiled.py --effort high <targetfile>.pyc
 ```
 > Free tier Gemini model requests may be used by Google to train their models. **Always** review the provider's terms of service before use.
 ### Using GPT-4.1 (Default OpenAI Model)
 
 ```bash
-python decompile-llm.py --key <openai_key> <targetfile>.pyc
+decompilellm --key <openai_key> <targetfile>.pyc
 ```
 
 ### Using Gemini 2.5 Flash (Free Tier Available, default Google Model)
 
 ```bash
-python decompile-llm.py --provider google --key <gemini_key> <targetfile>.pyc
+decompilellm --provider google --key <gemini_key> <targetfile>.pyc
 ```
 
 ### Save output to a file
 
 ```bash
-python decompile-llm.py --key <openai_key> --output decompiled.py (targetfile>.pyc
+decompilellm --key <openai_key> --output decompiled.py (targetfile>.pyc
 ```
 ---
 
 ## Advanced options
 For advanced users seeking additional control over the program's behavior, you may apply the following advanced options.
-> You may also run `python decompile-llm.py --help` to view all available options.
+> You may also run `decompilellm --help` to view all available options.
 
 | Flag | Purpose | Default |
 |------|---------|---------|
@@ -141,7 +145,7 @@ As mentioned above, the output code may be incorrect in cases where the informat
 The below is a copy and paste command for Gemini-2.5 Pro with reasoning effort on high, running 5 parallel sessions.
 
 ```bash
-python decompile-llm.py --provider google --key <gemini_key> --verify yes --iter 5 --effort high --multithreaded --model gemini-2.5-pro <targetfile>.pyc
+decompilellm --provider google --key <gemini_key> --verify yes --iter 5 --effort high --multithreaded --model gemini-2.5-pro <targetfile>.pyc
 ```
 
 ### The output code is incomplete.
@@ -150,7 +154,7 @@ This can happen when the automated splitting does not detect the correct model f
 *Please note that chunks are split evenly, which may cause artifacts in the output code. This may cause syntax verification to fail. You may choose to disable verification and manually fix the final output for these cases.*
 
 ```bash
-python decompile-llm.py --provider google --key <gemini_key> --verify yes --iter 3 --multithreaded --split-manual 5 <targetfile>.pyc
+decompilellm --provider google --key <gemini_key> --verify yes --iter 3 --multithreaded --split-manual 5 <targetfile>.pyc
 ```
 
 > For long projects, it's currently recommended to use Gemini models with higher context windows, and to split manually (since tiktoken does not support automated token calculation for Google Gemini models).

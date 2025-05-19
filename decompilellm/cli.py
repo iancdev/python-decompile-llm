@@ -147,7 +147,7 @@ def main():
         if args.effort.lower() not in ["low", "medium", "high", "none"]:
             parser.error("--effort must be 'low', 'medium', 'high', or 'none'.")
         args.effort = args.effort.lower()
-        print(f"{GREEN}Effort set to {args.effort.upper()}. This may get costly depending on your model provider!{RESET}", file=sys.stderr)
+        if args.effort != 'none': print(f"{GREEN}Effort set to {args.effort.upper()}. This may get costly depending on your model provider!{RESET}", file=sys.stderr)
 
     key = get_api_key(args.provider, args.key)
     if not key:

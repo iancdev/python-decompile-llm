@@ -4,13 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "decompilellm"
-version = "0.1.0"
+version = "0.1.1"
 description = "An LLM powered Python decompiler."
 readme = "README.md"
 requires-python = ">=3.10"
+license = { file = "LICENSE.MD" }
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
 
@@ -45,3 +45,6 @@ dependencies = [
 [project.urls]
 "Homepage" = "https://github.com/iancdev/python-decompile-llm"
 "Bug Tracker" = "https://github.com/iancdev/python-decompile-llm/issues"
+
+[tool.setuptools]
+packages = ["decompilellm"]

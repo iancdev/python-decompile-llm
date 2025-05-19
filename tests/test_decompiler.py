@@ -4,7 +4,7 @@ from decompilellm.decompiler import decompile
 
 def test_decompile(monkeypatch):
     disasm = "l1\nl2\nl3\nl4\n"
-    monkeypatch.setattr("decompile_llm.decompiler.disassemble", lambda path: (disasm, None))
+    monkeypatch.setattr("decompilellm.decompiler.disassemble", lambda path: (disasm, None))
 
     calls = []
 
@@ -12,8 +12,8 @@ def test_decompile(monkeypatch):
         calls.append(prompt)
         return f"code{len(calls)}", None
 
-    monkeypatch.setattr("decompile_llm.decompiler.call_llm", fake_call_llm)
-    monkeypatch.setattr("decompile_llm.decompiler.get_token_count", lambda text, model, provider: 1)
+    monkeypatch.setattr("decompilellm.decompiler.call_llm", fake_call_llm)
+    monkeypatch.setattr("decompilellm.decompiler.get_token_count", lambda text, model, provider: 1)
 
     args = argparse.Namespace(
         pyc_file="dummy.pyc",

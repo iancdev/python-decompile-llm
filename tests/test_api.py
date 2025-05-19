@@ -1,6 +1,6 @@
 from types import SimpleNamespace
 import openai
-from decompile_llm.api import call_llm
+from decompilellm.api import call_llm
 
 
 class StubCompletions:

@@ -1,5 +1,5 @@
 import tiktoken
-from decompile_llm.token_utils import get_token_count
+from decompilellm.token_utils import get_token_count
 
 
 def test_get_token_count_fallback(monkeypatch):

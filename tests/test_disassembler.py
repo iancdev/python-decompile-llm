@@ -1,5 +1,5 @@
 import py_compile
-from decompile_llm.disassembler import disassemble
+from decompilellm.disassembler import disassemble
 
 
 def test_disassemble(tmp_path):

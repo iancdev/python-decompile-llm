@@ -41,7 +41,7 @@ def check_similarity(code1: str, code2: str) -> float:
 
 
 def split_manual(disassembled: str, num_chunks: int):
-    """Splits by cahracter length as fallback"""
+    """Splits by character length as fallback"""
     if num_chunks <= 0:
         return [disassembled]
     text_len = len(disassembled)

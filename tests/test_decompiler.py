@@ -1,5 +1,5 @@
 import argparse
-from decompile_llm.decompiler import decompile
+from decompilellm.decompiler import decompile
 
 
 def test_decompile(monkeypatch):

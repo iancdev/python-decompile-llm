@@ -1,4 +1,4 @@
-from decompile_llm.utils import verify, check_similarity, split_manual, split_auto
+from decompilellm.utils import verify, check_similarity, split_manual, split_auto
 
 
 def test_verify_valid_invalid():

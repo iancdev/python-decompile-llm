@@ -203,7 +203,7 @@ def main():
             print("[Verify] Verifying syntax of the decompiled code...", file=sys.stderr)
             verified, verify_msg = verify(current_code)
             if verified:
-                print("[Verify] Syntax verification sucvcessful.", file=sys.stderr)
+                print("[Verify] Syntax verification successful.", file=sys.stderr)
                 final_code = current_code
                 break
             else:

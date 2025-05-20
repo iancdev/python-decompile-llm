@@ -98,7 +98,7 @@ def _decompile_llm(
                 try:
                     result_code, error_msg = future.result(timeout=THREAD_COMPLETION_TIMEOUT_SECONDS)
                     if error_msg:
-                        print(f"{YELLOW}LLM iteration {i+1}/{args.iter} failed: {error_msg}{RESET}", file=sys.stderr)
+                        print(f"{YELLOW}[LLM] LLM iteration {i+1}/{args.iter} failed: {error_msg}{RESET}", file=sys.stderr)
                     elif result_code:
                         success.append(result_code)
                         if args.verify.lower() == 'yes':
@@ -106,19 +106,19 @@ def _decompile_llm(
                             if ok:
                                 verifieds.append(result_code)
                             else:
-                                print(f"{YELLOW}LLM iteration {i+1}/{args.iter} failed verification: {verr}{RESET}", file=sys.stderr)
+                                print(f"{YELLOW}[Verify] LLM iteration {i+1}/{args.iter} failed verification: {verr}{RESET}", file=sys.stderr)
                         else:
                             verifieds.append(result_code)
                     else:
-                        print(f"{YELLOW}LLM iteration {i+1}/{args.iter} returned no code.{RESET}", file=sys.stderr)
+                        print(f"{YELLOW}[LLM] LLM iteration {i+1}/{args.iter} returned no code.{RESET}", file=sys.stderr)
                 except FutureTimeoutError:
-                    print(f"{RED}LLM iteration {i+1}/{args.iter} timed out after {THREAD_COMPLETION_TIMEOUT_SECONDS}s.{RESET}", file=sys.stderr)
+                    print(f"{RED}[LLM] LLM iteration {i+1}/{args.iter} timed out after {THREAD_COMPLETION_TIMEOUT_SECONDS}s.{RESET}", file=sys.stderr)
                 except Exception as e:
-                    print(f"{RED}LLM iteration {i+1}/{args.iter} failed with an error: {e!r}{RESET}", file=sys.stderr)
+                    print(f"{RED}[LLM] LLM iteration {i+1}/{args.iter} failed with an error: {e!r}{RESET}", file=sys.stderr)
                 
                 if not isinstance(progress, tqdm) and not ('tqdm' in globals() and callable(globals()['tqdm'])):
                     if (i + 1) % (args.iter // 10 + 1) == 0 or i + 1 == args.iter :
-                        print(f"Completed iteration {i+1}/{args.iter}", file=sys.stderr)
+                        print(f"[LLM] Completed iteration {i+1}/{args.iter}", file=sys.stderr)
         
         if isinstance(progress, tqdm): progress.close()
 
@@ -129,9 +129,11 @@ def _decompile_llm(
 
         if len(results) == 1:
             if args.verify.lower() == 'yes' and args.iter > 1:
-                print(f"{YELLOW}Warning: Only one syntactically valid output was generated.{RESET}", file=sys.stderr)
+                print(f"{YELLOW}[Verify] Warning: Only one syntactically valid output was generated.{RESET}", file=sys.stderr)
             return results[0], None
-
+        if args.verify.lower() == 'yes':
+            print(f"{GREEN}[Verify] Syntax verified{RESET}", file=sys.stderr)
+        print(f"[Similarity] Selecting best result based on similarity...{RESET}", file=sys.stderr)
         best = -1.0
         chosen_code = results[0]
         avg_sim = [0.0] * len(results)
@@ -148,10 +150,10 @@ def _decompile_llm(
             chosen_code = results[avg_index]
             best = avg_sim[avg_index]
         except Exception as e:
-            print(f"{YELLOW}Warning: Similarity comparison failed ({e}). Picking first valid result.{RESET}", file=sys.stderr)
+            print(f"{YELLOW}[Similarity] Warning: Similarity comparison failed ({e}). Picking first valid result.{RESET}", file=sys.stderr)
             return results[0], None
 
-        print(f"Selected code from {len(results)} successful iterations (best avg similarity: {best:.3f}).", file=sys.stderr)
+        print(f"[Similarity] Selected code from {len(results)} successful iterations (best avg similarity: {best:.3f}).", file=sys.stderr)
         return chosen_code, None
 
 def decompile(

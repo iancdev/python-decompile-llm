@@ -1,5 +1,13 @@
 import sys
 from difflib import SequenceMatcher
+
+
+def _normalize(code: str) -> str:
+    """Return code stripped of leading/trailing whitespace and blank lines."""
+    if not isinstance(code, str):
+        return ""
+    lines = [ln.strip() for ln in code.splitlines() if ln.strip()]
+    return "\n".join(lines)
 import ast
 from .token_utils import get_token_count
 from .constants import YELLOW, RESET
@@ -31,13 +39,17 @@ def verify(code: str):
 
 
 def check_similarity(code1: str, code2: str) -> float:
+    """Return a ratio representing how similar two code snippets are."""
     if not isinstance(code1, str) or not isinstance(code2, str):
         return 0.0
     if not code1 and not code2:
         return 1.0
     if not code1 or not code2:
         return 0.0
-    return SequenceMatcher(None, code1, code2).ratio()
+
+    code1_norm = _normalize(code1)
+    code2_norm = _normalize(code2)
+    return SequenceMatcher(None, code1_norm, code2_norm).ratio()
 
 
 def split_manual(disassembled: str, num_chunks: int):

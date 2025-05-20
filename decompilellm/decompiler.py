@@ -6,7 +6,7 @@ from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeout
 from .api import call_llm
 from .disassembler import disassemble
 from .token_utils import get_token_count
-from .utils import check_similarity, split_manual, split_auto
+from .utils import check_similarity, split_manual, split_auto, verify
 from tqdm import tqdm
 from .constants import (
     DEFAULT_MAX_WORKERS_FOR_ITERATIONS,
@@ -60,6 +60,7 @@ def _decompile_llm(
         return decompiled, None
     else: 
         success = []
+        verifieds = []
         
         worker_count = args.threads if args.multithreaded and args.threads else (args.iter if args.multithreaded else 1)
         worker_count = min(worker_count, args.iter, DEFAULT_MAX_WORKERS_FOR_ITERATIONS)
@@ -100,6 +101,14 @@ def _decompile_llm(
                         print(f"{YELLOW}LLM iteration {i+1}/{args.iter} failed: {error_msg}{RESET}", file=sys.stderr)
                     elif result_code:
                         success.append(result_code)
+                        if args.verify.lower() == 'yes':
+                            ok, verr = verify(result_code)
+                            if ok:
+                                verifieds.append(result_code)
+                            else:
+                                print(f"{YELLOW}LLM iteration {i+1}/{args.iter} failed verification: {verr}{RESET}", file=sys.stderr)
+                        else:
+                            verifieds.append(result_code)
                     else:
                         print(f"{YELLOW}LLM iteration {i+1}/{args.iter} returned no code.{RESET}", file=sys.stderr)
                 except FutureTimeoutError:
@@ -113,28 +122,37 @@ def _decompile_llm(
         
         if isinstance(progress, tqdm): progress.close()
 
-        if not success:
-            return None, "All LLM calls failed or returned no code in multi-iteration."
+        results = verifieds if args.verify.lower() == 'yes' else success
 
-        if len(success) == 1:
-            return success[0], None
-        else:
-            best = -1.0
-            chosen_code = success[0]
-            avg_sim = [0.0] * len(success)
-            for i in range(len(success)):
+        if not results:
+            return None, "No syntactically valid output from iterations." if args.verify.lower() == 'yes' else "All LLM calls failed or returned no code in multi-iteration."
+
+        if len(results) == 1:
+            if args.verify.lower() == 'yes' and args.iter > 1:
+                print(f"{YELLOW}Warning: Only one syntactically valid output was generated.{RESET}", file=sys.stderr)
+            return results[0], None
+
+        best = -1.0
+        chosen_code = results[0]
+        avg_sim = [0.0] * len(results)
+        try:
+            for i in range(len(results)):
                 current = 0.0
-                for j in range(len(success)):
-                    if i == j: continue
-                    current += check_similarity(success[i], success[j])
-                avg_sim[i] = current / (len(success) -1) if len(success) > 1 else 1.0
-            
+                for j in range(len(results)):
+                    if i == j:
+                        continue
+                    current += check_similarity(results[i], results[j])
+                avg_sim[i] = current / (len(results) - 1) if len(results) > 1 else 1.0
+
             avg_index = avg_sim.index(max(avg_sim))
-            chosen_code = success[avg_index]
+            chosen_code = results[avg_index]
             best = avg_sim[avg_index]
-            
-            print(f"Selected code from {len(success)} successful iterations (best avg similarity: {best:.3f}).", file=sys.stderr)
-            return chosen_code, None
+        except Exception as e:
+            print(f"{YELLOW}Warning: Similarity comparison failed ({e}). Picking first valid result.{RESET}", file=sys.stderr)
+            return results[0], None
+
+        print(f"Selected code from {len(results)} successful iterations (best avg similarity: {best:.3f}).", file=sys.stderr)
+        return chosen_code, None
 
 def decompile(
     args: argparse.Namespace,
